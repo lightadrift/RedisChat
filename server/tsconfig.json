@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",   
+    "lib": ["ES2022"],     
+    "baseUrl": ".",                                                      
+    "allowJs": true,
+    "outDir": "./build",                          
+    "rootDir": "./src",
+    "strict": true,         
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "*": [
+          "node_modules/*",
+          "src/types/*"
+      ]
+  }
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["./node_modules", "./build"]
+}

@@ -1,0 +1,12 @@
+{
+  "linter": {
+    "enabled": false,
+    "rules": {
+      "recommended": false
+    },
+    "ignore": [
+      "build",
+      "node_modules"
+    ]
+  }
+}
