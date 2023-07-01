@@ -23,7 +23,7 @@ wss.on("connection", (w: WebSocketWithID, req) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   console.log('Client connected from IP:', ip);
 });
-
+//test
 wss.on("connection", function connection(ws) {
   ws.on("error", console.error);
 
