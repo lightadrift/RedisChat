@@ -3,9 +3,7 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import { Router } from "./routes/userRoutes";
 import WebSocket, { WebSocketServer } from "ws";
-
-const app = express();
-const wss = new WebSocketServer({ port: 8080 });
+import { createServer } from "http";
 
 interface WebSocketWithID extends WebSocket {
   id?: string;
@@ -13,6 +11,9 @@ interface WebSocketWithID extends WebSocket {
 
 
 dotenv.config();
+const app = express();
+const server = createServer(app)
+const wss = new WebSocket.Server({ server });
 
 app.use(cors());
 app.use(express.json());
@@ -40,7 +41,8 @@ wss.on("connection", function connection(ws) {
   });
 });
 
-const server = app.listen(process.env.PORT, () => {
+const server2 = server.listen(process.env.PORT, () => {
+ 
   console.log(`Server started on port ${process.env.PORT}`);
 });
 
