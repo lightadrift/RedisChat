@@ -3,9 +3,10 @@ interface Props {
 }
 
 const Layout: React.FC<Props> = ({ children }) => {
+
   return (
     <>
-      <main className=" min-h-[100vh] bg-[#121212] font-lato ">{children}</main>
+      <main className=" min-h-screen bg-[#09090B] font-lato ">{children}</main>
     </>
   );
 };

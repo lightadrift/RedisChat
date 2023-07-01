@@ -1,6 +1,7 @@
-import { Client, Repository } from "redis-om";
-import type { Schema } from "redis-om";
-
+import { createClient } from "redis";
+import { Schema, Entity, Repository } from "redis-om";
+import { Users } from "../model/userModel";
+import { randomUUID } from "crypto";
 // Classe para fazer conexão com a db
 
 interface PropsPasswordCheck {
@@ -14,53 +15,84 @@ interface ResposePasswordCheck {
 }
 
 export class Connection {
-  conn: Client;
+  user_repo;
+  db;
   constructor() {
-    this.conn = new Client();
+    this.db = createClient({
+      url: "redis://default:dda9ad4a2c154e8cafd614f1344b66b0@sought-goldfish-40179.upstash.io:40179",
+      pingInterval: 10000,
+    });
+    this.user_repo = new Repository(Users, this.db);
+    this.connect();
   }
 
   // função para conectar. Se estiver usando um jeito diferente de usar Redis isso aqui pode mudar um pouco
   async connect() {
-    await this.conn.open(process.env.UPSTASH_URL);
+    await this.db.connect();
+  }
+  async ping() {
+    const t = await this.db.ping();
+    console.log(t);
+    return t;
   }
 
+  async test() {
+    return this.db.isReady;
+  }
+
+  async checkUsername(username: string) {
+    return this.user_repo
+      .search()
+      .where("username")
+      .equals(username)
+      .return.first();
+  }
   // função para fechamento de conexão. as vezes pode ser necessário
-  async close() {
-    await this.conn.close();
-  }
+  // async close() {
+  //   await this.conn.quit();
+  // }
 
-  // caso tu usando a função do Redis OM de esquemas, essas função cria um repositorio para leitura e inscrição de novas entidades 
-  fetch(schema: Schema<any>) {
-    return this.conn.fetchRepository(schema);
-  }
-
+  // // caso tu usando a função do Redis OM de esquemas, essas função cria um repositorio para leitura e inscrição de novas entidades
+  // fetch(schema: Schema<any>) {
+  //   return this.conn.fetchRepository(schema);
+  // }
 
   // caso esteja usando redis sem Redis Search ou semelhantes, essa função cria um usuario em uma string
   async CreateUser(username: string, password: string, email: string) {
-    return await this.conn.execute([
-      "SET",
-      `user:${username}`,
-      `{"email": "${email}", "password": "${password}"}`,
-    ]);
+    const id = randomUUID()
+    const data = {
+      username: username,
+      id: id,
+      password: password,
+      email: email,
+      isOnline: "false",
+    };
+    await this.db.hSet(`User:${id}`, data);
+    await this.db.hSet('users', username, id)
+    // await this.db.sAdd(`lookup:${username}`, id )
+    // await this.db.sAdd('id_list', id)
+    // this.user_repo.save(data);
+    console.log("create");
+    return;
   }
 
-  // essa função adiciona o usuario a um SET e incrementa o numero geral de usuarios em +1
-  async AddToList(username: string) {
-    await this.conn.execute(["INCR", "id:users"]);
-    return await this.conn.execute(["SADD", "Users", username]);
-  }
+  // // essa função adiciona o usuario a um SET e incrementa o numero geral de usuarios em +1
+  // async AddToList(username: string) {
+  //   await this.conn.execute(["INCR", "id:users"]);
+  //   return await this.conn.execute(["SADD", "Users", username]);
+  // }
 
-  // checka se o usuario existe já na db
-  async CheckUsername(username: string) {
-    return await this.conn.execute(["SISMEMBER", "Users", username]);
-  }
+  // // checka se o usuario existe já na db
+  // async CheckUsername(username: string) {
+  //   return await this.conn.execute(["SISMEMBER", "Users", username]);
+  // }
 
-  // checka se a senha é a mesma cadastrada na db
-  async CheckPassoword({ password, username }: PropsPasswordCheck) {
-    const check = (await this.conn.execute([
-      "GET",
-      `user:${username}`,
-    ])) as string;
-    const user = JSON.parse(check) as ResposePasswordCheck;
-  }
+  // // checka se a senha é a mesma cadastrada na db
+  // async CheckPassoword({ password, username }: PropsPasswordCheck) {
+  //   const check = (await this.conn.execute([
+  //     "GET",
+  //     `user:${username}`,
+  //   ])) as string;
+  //   const user = JSON.parse(check) as ResposePasswordCheck;
+  // }
 }
