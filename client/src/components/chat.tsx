@@ -74,7 +74,7 @@ export default function Chat() {
   }, [message]);
 
   useEffectOnce(() => {
-    const ws = new WebSocket("ws://redischat-production.up.railway.app:7090");
+    const ws = new WebSocket("wss://redischat-production.up.railway.app:7090");
     setWs(ws);
     return () => {
       ws.close();
