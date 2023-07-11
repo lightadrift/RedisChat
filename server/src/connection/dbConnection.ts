@@ -1,7 +1,13 @@
 import { createClient } from "redis";
 import { Schema, Entity, Repository } from "redis-om";
-import { Users } from "../model/userModel";
-import { randomUUID } from "crypto";
+import { nanoid } from "nanoid";
+import * as dotenv from "dotenv";
+
+
+
+
+dotenv.config()
+
 // Classe para fazer conexão com a db
 
 interface PropsPasswordCheck {
@@ -14,15 +20,15 @@ interface ResposePasswordCheck {
   email: string;
 }
 
+
+
 export class Connection {
-  user_repo;
   db;
   constructor() {
     this.db = createClient({
-      url: "redis://default:dda9ad4a2c154e8cafd614f1344b66b0@sought-goldfish-40179.upstash.io:40179",
+      url: process.env.UPSTASH_URL,
       pingInterval: 10000,
     });
-    this.user_repo = new Repository(Users, this.db);
     this.connect();
   }
 
@@ -40,12 +46,14 @@ export class Connection {
     return this.db.isReady;
   }
 
-  async checkUsername(username: string) {
-    return this.user_repo
-      .search()
-      .where("username")
-      .equals(username)
-      .return.first();
+  async getSaltPw(username: string) {
+    const id = await this.db.hGet("users", username)
+    return await this.db.hGet(`User:${id}`, "password")
+  }
+
+
+  async getId(username: string) {
+    return this.db.hGet("users", username)
   }
   // função para fechamento de conexão. as vezes pode ser necessário
   // async close() {
@@ -59,7 +67,7 @@ export class Connection {
 
   // caso esteja usando redis sem Redis Search ou semelhantes, essa função cria um usuario em uma string
   async CreateUser(username: string, password: string, email: string) {
-    const id = randomUUID()
+    const id = nanoid()
     const data = {
       username: username,
       id: id,
@@ -72,7 +80,6 @@ export class Connection {
     // await this.db.sAdd(`lookup:${username}`, id )
     // await this.db.sAdd('id_list', id)
     // this.user_repo.save(data);
-    console.log("create");
     return;
   }
 
@@ -83,9 +90,9 @@ export class Connection {
   // }
 
   // // checka se o usuario existe já na db
-  // async CheckUsername(username: string) {
-  //   return await this.conn.execute(["SISMEMBER", "Users", username]);
-  // }
+  async CheckUsername(username: string) {
+    return await this.db.hExists("users", username);
+  }
 
   // // checka se a senha é a mesma cadastrada na db
   // async CheckPassoword({ password, username }: PropsPasswordCheck) {

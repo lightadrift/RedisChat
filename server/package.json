@@ -2,7 +2,9 @@
   "name": "server",
   "version": "1.0.0",
   "description": "realtime chat",
-  "main": "./build/index.js",
+  "main": "./build/index",
+  "types": "./build/index",
+  "engines": {"node": ">=16"},
   "scripts": {
     "dev": "concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
     "watch-compile": "swc src -w --out-dir build",
@@ -11,13 +13,14 @@
     "start": "node build/index.js",
     "clean": "rm -rf build"
   },
-  "author": "",
+  "author": "Ronaldo Monteiro",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "nanoid": "3.3.6",
     "nodemon": "^2.0.22",
     "redis": "^4.6.7",
     "redis-om": "0.4.0-beta.3",

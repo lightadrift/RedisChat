@@ -6,8 +6,16 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAuthStore } from "../store/loginStore";
+
+interface Messages {
+  message: string,
+  id: string
+}
+
 
 export default function Chat() {
+  const { user_id } = useAuthStore();
   const useEffectOnce = (effect: any) => {
     const effectFn = useRef(effect);
     const destroyFn = useRef<(() => void) | undefined>();
@@ -45,9 +53,12 @@ export default function Chat() {
   };
   let messageString = JSON.stringify(message1);
   const [ws, setWs] = useState<WebSocket>();
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Messages[]>([]);
   const [message, setMessage] = useState<string>();
-
+  const data = {
+    message: message,
+    id: user_id,
+  };
   const debounce = (
     func: (...args: any[]) => void,
     delay: number
@@ -73,8 +84,9 @@ export default function Chat() {
     console.log(message); // This will log the new value after state update
   }, [message]);
 
+  // use wss for securite connections
   useEffectOnce(() => {
-    const ws = new WebSocket("wss://redischat-production.up.railway.app");
+    const ws = new WebSocket("ws://localhost:3001");
     setWs(ws);
     return () => {
       ws.close();
@@ -85,8 +97,10 @@ export default function Chat() {
     if (ws) {
       ws.onmessage = async function (event) {
         console.log("Data received from server: ", await event.data.text());
-        const message = await event.data.text()
-        setMessages((prevMessages) => [...prevMessages, message]);
+        const message = await event.data.text();
+        const d = JSON.parse(message)
+        // console.log(d)
+        setMessages((prevMessages) => [...prevMessages, d]);
       };
     } else {
       console.log("ws undefined");
@@ -108,16 +122,37 @@ export default function Chat() {
         </h1>
         <div className="bg-zinc-900 w-2/3 h-[55rem] ml-auto mr-auto rounded-2xl relative flex flex-col">
           <div className=" w-full h-[90%] overflow-scroll flex flex-col gap-6 p-8 overflow-x-hidden">
-            {messages?.map((message, index) => {
-              return (
-                <div
+            {messages?.map((m, index) => {
+              if(m.id === user_id) {
+                return (
+                  <div
                   key={index}
-                  className=" text-white bg-lime-500 p-4 w-fit rounded-lg max-w-xl self-end"
+                  className=" text-black  text-lg font-medium bg-red-300 p-4 w-fit rounded-lg max-w-xl self-end"
                 >
                   {" "}
-                  {message}
+                  {m.message}
                 </div>
-              );
+                )
+              } else {
+                return (
+                  <div
+                  key={index}
+                  className=" text-black  text-lg font-medium bg-sky-300 p-4 w-fit rounded-lg max-w-xl self-end"
+                >
+                  {" "}
+                  {m.message}
+                </div>
+                )
+              }
+              // return (
+              //   <div
+              //     key={index}
+              //     className=" text-black  text-lg font-medium bg-sky-300 p-4 w-fit rounded-lg max-w-xl self-end"
+              //   >
+              //     {" "}
+              //     {m.message}
+              //   </div>
+              // );
             })}
           </div>
           <div className=" w-full relative h-1/5 items-center flex place-content-center ">
@@ -128,7 +163,7 @@ export default function Chat() {
             />
             <button
               onClick={() => {
-                ws?.send(message!);
+                ws?.send(JSON.stringify(data)!);
               }}
               className="text-white ml-2"
             >

@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { loginRoute } from "../utils/APIRoutes";
-
+import { useAuthStore } from "../store/loginStore";
+import { useNavigate } from "react-router-dom";
 interface Props {
   username: null | string;
   password: null | string;
 }
 
 function Login() {
+  const navigate = useNavigate();
+  const {setAuth} = useAuthStore()
   const [InputData, setInputData] = useState<Props>({
     username: null,
     password: null,
@@ -23,7 +26,9 @@ function Login() {
       password,
     });
     if(data.status === true) {
+        setAuth(true, data.id)
         console.log('foi')
+        navigate("/chat")
     }
   };
 

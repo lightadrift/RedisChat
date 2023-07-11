@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import { Connection } from "../connection/dbConnection";
 import bcrypt from "bcrypt";
 
-
 // instancia uma nova conexão a db
 //  const db = new Connection();
 const db = new Connection();
@@ -22,24 +21,30 @@ function checkSpecialLetters(str: string) {
 
 //função de login de um usuario
 
-// export const login = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { username, password } = req.body as ReqProps;
-//     const usuario = await db.CheckUsername(username);
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { username, password } = req.body as ReqProps;
+    const usuario = await db.CheckUsername(username);
+    if (!usuario) {
+      return res.json({ msg: "Incorrect Username", status: false });
+    }
+    const salted_password = await db.getSaltPw(username);
+    if (salted_password) {
+      const password_confirmation = await bcrypt.compare(password, salted_password);
+      if(password_confirmation) {
+        const id = await db.getId(username)
+        return res.json({ status: true, id: id });
+      }
+    }
 
-//     if (!usuario) {
-//       return res.json({ msg: "Incorrect Username or Password", status: false });
-//     }
-
-//     return res.json({ status: true, usuario });
-//   } catch (ex) {
-//     next(ex);
-//   }
-// };
+  } catch (ex) {
+    next(ex);
+  }
+};
 
 // função para cadastro de um usuario
 
@@ -61,7 +66,7 @@ export const register = async (
       console.log("não foi2");
       return res.json({ msg: "Senha muito grande", status: false });
     }
-    
+
     // const isUsernameCreated = async () => {
     //   console.log(await db.checkUsername(username))
     //   return await db.checkUsername(username)
@@ -71,9 +76,9 @@ export const register = async (
     //   console.log("usuario já existente");
     //   return res.json({ msg: "Username já cadastrado", status: false });
     // }
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    await db.CreateUser(username, hashedPassword, email)
+    await db.CreateUser(username, hashedPassword, email);
 
     // const hashedPassword = await bcrypt.hash(password, 10);
     // console.log(hashedPassword)
