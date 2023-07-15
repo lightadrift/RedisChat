@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
-import { Router } from "./routes/userRoutes";
+import { RoomRouter, Router } from "./routes/userRoutes";
 import WebSocket, { WebSocketServer } from "ws";
 import { createServer } from "http";
 
@@ -18,6 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", Router);
+app.use("/api/rooms", RoomRouter);
 
 wss.on("connection", (w: WebSocketWithID, req) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
