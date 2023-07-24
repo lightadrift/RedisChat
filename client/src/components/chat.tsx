@@ -9,7 +9,7 @@ import {
 import { useAuthStore } from "../store/loginStore";
 import Sidebar from "./roomSidebar";
 import { useNavigate } from "react-router-dom";
-
+import style from "../styles/chat.module.css";
 interface Messages {
   message: string;
   id: string;
@@ -110,7 +110,7 @@ export default function Chat() {
       navigate("/login");
       return;
     } else {
-      setLoading(false)
+      setLoading(false);
     }
   }, []);
 
@@ -121,8 +121,8 @@ export default function Chat() {
       <>
         <Sidebar />
         <div className=" w-full min-h-[100vh] pt-10 font-lato flex flex-col">
-          <div className="bg-zinc-900 w-2/3 h-[55rem] ml-auto mr-auto rounded-2xl relative flex flex-col">
-            <div className=" w-full h-[90%] overflow-scroll flex flex-col gap-6 p-8 overflow-x-hidden">
+          <div className="bg-zinc-900 w-4/5 h-[55rem] ml-auto mr-auto rounded-xl relative flex flex-col">
+            <div className={` w-full h-[90%] ${style.scroll} overflow-scroll flex flex-col gap-6 p-8 overflow-x-hidden`}>
               {messages?.map((m, index) => {
                 if (m.id === user_id) {
                   return (
@@ -160,7 +160,7 @@ export default function Chat() {
               <input
                 onChange={(event) => debouncedHandleChange(event)}
                 type="text"
-                className=" p-2 w-[40%]  rounded-md border-1 border-gray-300"
+                className=" p-2 w-[40%] bg-zinc-800  rounded-md border-1 border-gray-300"
               />
               <button
                 onClick={() => {
